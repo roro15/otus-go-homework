@@ -24,7 +24,7 @@ func NewRuneReader(input []rune) *RuneReader {
 func (r *RuneReader) Read() (rune, bool) {
 	if r.index < len(r.input) {
 		v := r.input[r.index]
-		r.index += 1
+		r.index++
 		return v, true
 	}
 	return 0, false
