@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var splitter = regexp.MustCompile("\\s+")
+var splitter = regexp.MustCompile(`\s+`)
 
 const punctuationMarks = ",.-;!"
 
@@ -48,7 +48,7 @@ func (t *Top) Add(word string, count int) {
 }
 
 func (t *Top) Result() []string {
-	var r []string
+	r := make([]string, 0, len(t.stats))
 	for _, s := range t.stats {
 		if s == nil {
 			break
