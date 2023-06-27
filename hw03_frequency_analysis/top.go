@@ -2,12 +2,57 @@ package hw03frequencyanalysis
 
 import (
 	"regexp"
+	"sort"
 	"strings"
 )
 
 var splitter = regexp.MustCompile(`\s+`)
 
 const punctuationMarks = ",.-;!"
+
+func Top10(input string) []string {
+	words := splitter.Split(input, -1)
+	wordsFrequency := map[string]int{}
+	for _, word := range words {
+		word = cleanWord(word)
+		if word == "" {
+			continue
+		}
+		wordsFrequency[word]++
+	}
+	cleanedWords := make([]string, 0, len(wordsFrequency))
+	for word := range wordsFrequency {
+		cleanedWords = append(cleanedWords, word)
+	}
+	sort.Slice(cleanedWords, func(i, j int) bool {
+		w1, w2 := cleanedWords[i], cleanedWords[j]
+		if wordsFrequency[w1] == wordsFrequency[w2] {
+			return strings.Compare(w1, w2) < 1
+		}
+		return wordsFrequency[w1] > wordsFrequency[w2]
+	})
+	if len(cleanedWords) > 10 {
+		cleanedWords = cleanedWords[:10]
+	}
+	return cleanedWords
+}
+
+func Top10V2(input string) []string {
+	words := splitter.Split(input, -1)
+	wordsFrequency := map[string]int{}
+	for _, word := range words {
+		word = cleanWord(word)
+		if word == "" {
+			continue
+		}
+		wordsFrequency[word]++
+	}
+	t := newTop(10)
+	for word, count := range wordsFrequency {
+		t.add(word, count)
+	}
+	return t.result()
+}
 
 type stat struct {
 	word  string
@@ -24,17 +69,17 @@ func (s *stat) less(r *stat) bool {
 	return false
 }
 
-type Top struct {
+type top struct {
 	stats []*stat
 }
 
-func NewTop(size int) *Top {
-	return &Top{
+func newTop(size int) *top {
+	return &top{
 		stats: make([]*stat, size),
 	}
 }
 
-func (t *Top) Add(word string, count int) {
+func (t *top) add(word string, count int) {
 	n := &stat{
 		word:  word,
 		count: count,
@@ -47,7 +92,7 @@ func (t *Top) Add(word string, count int) {
 	}
 }
 
-func (t *Top) Result() []string {
+func (t *top) result() []string {
 	r := make([]string, 0, len(t.stats))
 	for _, s := range t.stats {
 		if s == nil {
@@ -58,7 +103,7 @@ func (t *Top) Result() []string {
 	return r
 }
 
-func (t *Top) insert(index int, s *stat) {
+func (t *top) insert(index int, s *stat) {
 	if index >= len(t.stats) {
 		return
 	}
@@ -68,24 +113,7 @@ func (t *Top) insert(index int, s *stat) {
 	t.stats[index] = s
 }
 
-func CleanWord(word string) string {
+func cleanWord(word string) string {
 	word = strings.Trim(word, punctuationMarks)
 	return strings.ToLower(word)
-}
-
-func Top10(input string) []string {
-	words := splitter.Split(input, -1)
-	wordsFrequency := map[string]int{}
-	for _, word := range words {
-		word = CleanWord(word)
-		if word == "" {
-			continue
-		}
-		wordsFrequency[word]++
-	}
-	t := NewTop(10)
-	for word, count := range wordsFrequency {
-		t.Add(word, count)
-	}
-	return t.Result()
 }
